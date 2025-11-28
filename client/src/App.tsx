@@ -1,5 +1,4 @@
 import { Switch, Route } from "wouter";
-import { Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,46 +10,45 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 
-// Lazy load pages
-const Landing = lazy(() => import("@/pages/landing"));
-const Home = lazy(() => import("@/pages/home"));
-const Courses = lazy(() => import("@/pages/courses"));
-const CourseDetail = lazy(() => import("@/pages/course-detail"));
-const Assessment = lazy(() => import("@/pages/assessment"));
-const LearningPaths = lazy(() => import("@/pages/learning-paths"));
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const Projects = lazy(() => import("@/pages/projects"));
-const Analytics = lazy(() => import("@/pages/analytics"));
-const NotFound = lazy(() => import("@/pages/not-found"));
-
-const PageLoader = () => <div className="flex items-center justify-center h-screen">Loading...</div>;
+import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
+import Home from "@/pages/home";
+import Courses from "@/pages/courses";
+import CourseDetail from "@/pages/course-detail";
+import Assessment from "@/pages/assessment";
+import LearningPaths from "@/pages/learning-paths";
+import Dashboard from "@/pages/dashboard";
+import Projects from "@/pages/projects";
+import Analytics from "@/pages/analytics";
+import NotFound from "@/pages/not-found";
 
 function Router() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Switch>
-        {!isAuthenticated ? (
-          <>
-            <Route path="/" component={Landing} />
-            <Route component={NotFound} />
-          </>
-        ) : (
-          <>
-            <Route path="/" component={Home} />
-            <Route path="/courses" component={Courses} />
-            <Route path="/courses/:id" component={CourseDetail} />
-            <Route path="/assessment" component={Assessment} />
-            <Route path="/learning-paths" component={LearningPaths} />
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/analytics" component={Analytics} />
-            <Route component={NotFound} />
-          </>
-        )}
-      </Switch>
-    </Suspense>
+    <Switch>
+      {!isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
+          <Route component={NotFound} />
+        </>
+      ) : (
+        <>
+          <Route path="/" component={Home} />
+          <Route path="/courses" component={Courses} />
+          <Route path="/courses/:id" component={CourseDetail} />
+          <Route path="/assessment" component={Assessment} />
+          <Route path="/learning-paths" component={LearningPaths} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/projects" component={Projects} />
+          <Route path="/analytics" component={Analytics} />
+          <Route component={NotFound} />
+        </>
+      )}
+    </Switch>
   );
 }
 
@@ -81,9 +79,8 @@ function AuthenticatedApp() {
 }
 
 function AppContent() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  // Show content immediately, don't wait for auth check
   return isAuthenticated ? <AuthenticatedApp /> : <Router />;
 }
 

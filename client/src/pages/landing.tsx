@@ -39,9 +39,20 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild data-testid="button-login">
-              <a href="/api/login">
-                Sign In with Your Account
+              <a href="/login">
+                Sign In
                 <ArrowRight className="ml-2 h-5 w-5" />
+              </a>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-white/10 backdrop-blur-sm border-white/30 text-white"
+              asChild
+              data-testid="button-signup"
+            >
+              <a href="/signup">
+                Create Account
               </a>
             </Button>
           </div>
