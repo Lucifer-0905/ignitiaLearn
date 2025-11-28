@@ -1,17 +1,6 @@
-import { randomUUID } from "crypto";
-import type {
-  Course,
-  LearningPath,
-  UserProgress,
-  AssessmentQuestion,
-  AssessmentResult,
-  Project,
-  Analytics,
-  UserPreferences,
-} from "@shared/schema";
+import type { Course, LearningPath, AssessmentQuestion, Project, UserProgress, Analytics } from "@shared/schema";
 
-// Mock data imports for initial seeding
-const mockCourses: Course[] = [
+export const mockCourses: Course[] = [
   {
     id: "1",
     title: "Complete Web Development Bootcamp",
@@ -149,7 +138,7 @@ const mockCourses: Course[] = [
     duration: "35 hours",
     rating: 4.8,
     reviewCount: 72000,
-    instructor: "Maximilian Schwarzmuller",
+    instructor: "Maximilian Schwarzmüller",
     thumbnailUrl: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=225&fit=crop",
     syllabus: [
       { week: 1, title: "React Native Basics", topics: ["Setup", "Components", "Styling"], duration: "8 hours" },
@@ -204,7 +193,7 @@ const mockCourses: Course[] = [
   },
 ];
 
-const mockLearningPaths: LearningPath[] = [
+export const mockLearningPaths: LearningPath[] = [
   {
     id: "lp1",
     title: "Full-Stack Web Developer",
@@ -247,7 +236,7 @@ const mockLearningPaths: LearningPath[] = [
   },
 ];
 
-const mockAssessmentQuestions: AssessmentQuestion[] = [
+export const mockAssessmentQuestions: AssessmentQuestion[] = [
   {
     id: "q1",
     question: "What does HTML stand for?",
@@ -350,7 +339,7 @@ const mockAssessmentQuestions: AssessmentQuestion[] = [
   },
 ];
 
-const mockProjects: Project[] = [
+export const mockProjects: Project[] = [
   {
     id: "p1",
     title: "Personal Portfolio Website",
@@ -437,239 +426,47 @@ const mockProjects: Project[] = [
   },
 ];
 
-// Storage interface
-export interface IStorage {
-  // Courses
-  getCourses(): Promise<Course[]>;
-  getCourse(id: string): Promise<Course | undefined>;
-  getCoursesByCategory(category: string): Promise<Course[]>;
-  searchCourses(query: string): Promise<Course[]>;
+export const mockUserProgress: UserProgress[] = [
+  {
+    id: "up1",
+    courseId: "1",
+    completedModules: [1, 2],
+    progressPercent: 40,
+    startedAt: "2024-01-15T10:00:00Z",
+    lastAccessedAt: "2024-01-28T14:30:00Z",
+    timeSpentMinutes: 1260,
+  },
+  {
+    id: "up2",
+    courseId: "3",
+    completedModules: [1],
+    progressPercent: 25,
+    startedAt: "2024-01-20T09:00:00Z",
+    lastAccessedAt: "2024-01-27T16:45:00Z",
+    timeSpentMinutes: 420,
+  },
+];
 
-  // Learning Paths
-  getLearningPaths(): Promise<LearningPath[]>;
-  getLearningPath(id: string): Promise<LearningPath | undefined>;
-
-  // Assessment
-  getAssessmentQuestions(): Promise<AssessmentQuestion[]>;
-  saveAssessmentResult(result: AssessmentResult): Promise<AssessmentResult>;
-  getAssessmentResults(): Promise<AssessmentResult[]>;
-
-  // User Progress
-  getUserProgress(): Promise<UserProgress[]>;
-  getCourseProgress(courseId: string): Promise<UserProgress | undefined>;
-  updateProgress(courseId: string, progress: Partial<UserProgress>): Promise<UserProgress>;
-
-  // Projects
-  getProjects(): Promise<Project[]>;
-  getProject(id: string): Promise<Project | undefined>;
-
-  // Analytics
-  getAnalytics(): Promise<Analytics>;
-
-  // User Preferences
-  getUserPreferences(): Promise<UserPreferences | undefined>;
-  saveUserPreferences(prefs: UserPreferences): Promise<UserPreferences>;
-}
-
-export class MemStorage implements IStorage {
-  private courses: Map<string, Course>;
-  private learningPaths: Map<string, LearningPath>;
-  private assessmentQuestions: AssessmentQuestion[];
-  private assessmentResults: Map<string, AssessmentResult>;
-  private userProgress: Map<string, UserProgress>;
-  private projects: Map<string, Project>;
-  private userPreferences: UserPreferences | undefined;
-
-  constructor() {
-    this.courses = new Map();
-    this.learningPaths = new Map();
-    this.assessmentQuestions = [];
-    this.assessmentResults = new Map();
-    this.userProgress = new Map();
-    this.projects = new Map();
-
-    // Seed initial data
-    this.seedData();
-  }
-
-  private seedData() {
-    // Seed courses
-    mockCourses.forEach((course) => {
-      this.courses.set(course.id, course);
-    });
-
-    // Seed learning paths
-    mockLearningPaths.forEach((path) => {
-      this.learningPaths.set(path.id, path);
-    });
-
-    // Seed assessment questions
-    this.assessmentQuestions = mockAssessmentQuestions;
-
-    // Seed projects
-    mockProjects.forEach((project) => {
-      this.projects.set(project.id, project);
-    });
-
-    // Seed some user progress
-    this.userProgress.set("up1", {
-      id: "up1",
-      courseId: "1",
-      completedModules: [1, 2],
-      progressPercent: 40,
-      startedAt: "2024-01-15T10:00:00Z",
-      lastAccessedAt: new Date().toISOString(),
-      timeSpentMinutes: 1260,
-    });
-    this.userProgress.set("up2", {
-      id: "up2",
-      courseId: "3",
-      completedModules: [1],
-      progressPercent: 25,
-      startedAt: "2024-01-20T09:00:00Z",
-      lastAccessedAt: new Date().toISOString(),
-      timeSpentMinutes: 420,
-    });
-  }
-
-  // Courses
-  async getCourses(): Promise<Course[]> {
-    return Array.from(this.courses.values());
-  }
-
-  async getCourse(id: string): Promise<Course | undefined> {
-    return this.courses.get(id);
-  }
-
-  async getCoursesByCategory(category: string): Promise<Course[]> {
-    return Array.from(this.courses.values()).filter(
-      (course) => course.category === category
-    );
-  }
-
-  async searchCourses(query: string): Promise<Course[]> {
-    const lowerQuery = query.toLowerCase();
-    return Array.from(this.courses.values()).filter(
-      (course) =>
-        course.title.toLowerCase().includes(lowerQuery) ||
-        course.description.toLowerCase().includes(lowerQuery) ||
-        course.skills.some((skill) => skill.toLowerCase().includes(lowerQuery))
-    );
-  }
-
-  // Learning Paths
-  async getLearningPaths(): Promise<LearningPath[]> {
-    return Array.from(this.learningPaths.values());
-  }
-
-  async getLearningPath(id: string): Promise<LearningPath | undefined> {
-    return this.learningPaths.get(id);
-  }
-
-  // Assessment
-  async getAssessmentQuestions(): Promise<AssessmentQuestion[]> {
-    return this.assessmentQuestions;
-  }
-
-  async saveAssessmentResult(result: AssessmentResult): Promise<AssessmentResult> {
-    const id = result.id || randomUUID();
-    const newResult = { ...result, id };
-    this.assessmentResults.set(id, newResult);
-    return newResult;
-  }
-
-  async getAssessmentResults(): Promise<AssessmentResult[]> {
-    return Array.from(this.assessmentResults.values());
-  }
-
-  // User Progress
-  async getUserProgress(): Promise<UserProgress[]> {
-    return Array.from(this.userProgress.values());
-  }
-
-  async getCourseProgress(courseId: string): Promise<UserProgress | undefined> {
-    return Array.from(this.userProgress.values()).find(
-      (p) => p.courseId === courseId
-    );
-  }
-
-  async updateProgress(
-    courseId: string,
-    progress: Partial<UserProgress>
-  ): Promise<UserProgress> {
-    let existing = await this.getCourseProgress(courseId);
-    if (existing) {
-      const updated = { ...existing, ...progress, lastAccessedAt: new Date().toISOString() };
-      this.userProgress.set(existing.id, updated);
-      return updated;
-    } else {
-      const newProgress: UserProgress = {
-        id: randomUUID(),
-        courseId,
-        completedModules: progress.completedModules || [],
-        progressPercent: progress.progressPercent || 0,
-        startedAt: new Date().toISOString(),
-        lastAccessedAt: new Date().toISOString(),
-        timeSpentMinutes: progress.timeSpentMinutes || 0,
-      };
-      this.userProgress.set(newProgress.id, newProgress);
-      return newProgress;
-    }
-  }
-
-  // Projects
-  async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
-  }
-
-  async getProject(id: string): Promise<Project | undefined> {
-    return this.projects.get(id);
-  }
-
-  // Analytics
-  async getAnalytics(): Promise<Analytics> {
-    const allProgress = await this.getUserProgress();
-    const totalTimeSpent = allProgress.reduce((sum, p) => sum + p.timeSpentMinutes, 0);
-    const avgProgress = allProgress.length
-      ? Math.round(allProgress.reduce((sum, p) => sum + p.progressPercent, 0) / allProgress.length)
-      : 0;
-
-    const completedCourses = allProgress.filter((p) => p.progressPercent === 100).length;
-
-    return {
-      totalCoursesStarted: allProgress.length,
-      totalCoursesCompleted: completedCourses,
-      totalTimeSpentMinutes: totalTimeSpent,
-      averageProgress: avgProgress,
-      skillsAcquired: ["HTML", "CSS", "JavaScript basics", "Design fundamentals"],
-      weeklyActivity: [
-        { day: "Mon", minutes: 120 },
-        { day: "Tue", minutes: 90 },
-        { day: "Wed", minutes: 150 },
-        { day: "Thu", minutes: 60 },
-        { day: "Fri", minutes: 180 },
-        { day: "Sat", minutes: 240 },
-        { day: "Sun", minutes: 45 },
-      ],
-      categoryDistribution: {
-        development: 60,
-        design: 25,
-        "data-science": 10,
-        business: 5,
-      },
-      streakDays: 12,
-    };
-  }
-
-  // User Preferences
-  async getUserPreferences(): Promise<UserPreferences | undefined> {
-    return this.userPreferences;
-  }
-
-  async saveUserPreferences(prefs: UserPreferences): Promise<UserPreferences> {
-    this.userPreferences = { ...prefs, id: prefs.id || randomUUID() };
-    return this.userPreferences;
-  }
-}
-
-export const storage = new MemStorage();
+export const mockAnalytics: Analytics = {
+  totalCoursesStarted: 4,
+  totalCoursesCompleted: 1,
+  totalTimeSpentMinutes: 2580,
+  averageProgress: 45,
+  skillsAcquired: ["HTML", "CSS", "JavaScript basics", "Design fundamentals"],
+  weeklyActivity: [
+    { day: "Mon", minutes: 120 },
+    { day: "Tue", minutes: 90 },
+    { day: "Wed", minutes: 150 },
+    { day: "Thu", minutes: 60 },
+    { day: "Fri", minutes: 180 },
+    { day: "Sat", minutes: 240 },
+    { day: "Sun", minutes: 45 },
+  ],
+  categoryDistribution: {
+    development: 60,
+    design: 25,
+    "data-science": 10,
+    business: 5,
+  },
+  streakDays: 12,
+};
