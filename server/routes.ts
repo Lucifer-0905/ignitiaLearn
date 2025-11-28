@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleGenAI } from "@google/genai";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 
 // Gemini AI integration - DON'T DELETE THIS COMMENT
 // Note that the newest Gemini model series is "gemini-2.5-flash"
