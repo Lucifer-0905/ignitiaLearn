@@ -78,18 +78,22 @@ function AuthenticatedApp() {
   );
 }
 
-function App() {
+function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
+  return isAuthenticated ? <AuthenticatedApp /> : <Router />;
+}
+
+function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="ignitia-theme">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          {isAuthenticated ? <AuthenticatedApp /> : <Router />}
+          <AppContent />
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
