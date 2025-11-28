@@ -185,6 +185,13 @@ Skill Assessment - Take an AI-generated skills quiz (uses Gemini)
 Projects - Get AI-suggested portfolio projects (uses Gemini)
 Analytics - Track your learning progress
 Troubleshooting
+Issue	Solution
+Port 5000 already in use	Kill the process: lsof -i :5000 then kill -9 <PID>
+npm install fails	Delete node_modules and package-lock.json, then retry
+Gemini API not working	Check if GEMINI_API_KEY is set in .env file
+Page not loading	Check browser console (F12) and terminal for errors
+That's it! You're ready to run Ignitia locally. 🚀
+
 
 📱 Ignitia Sidebar - Complete Feature Guide
 Here's how each feature in your sidebar works:
@@ -360,9 +367,4 @@ Gemini analyzes: Your weak areas + strong areas + current skills
 Generates → Personalized learning path recommendation
   ↓
 Shows: "Based on your assessment, here's your custom learning path..."
-Issue	Solution
-Port 5000 already in use	Kill the process: lsof -i :5000 then kill -9 <PID>
-npm install fails	Delete node_modules and package-lock.json, then retry
-Gemini API not working	Check if GEMINI_API_KEY is set in .env file
-Page not loading	Check browser console (F12) and terminal for errors
-That's it! You're ready to run Ignitia locally. 🚀
+
