@@ -1,26 +1,43 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+// Gemini AI integration - DON'T DELETE THIS COMMENT
+// Note that the newest Gemini model series is "gemini-2.5-flash"
 // Lazy initialization to allow app to start without API key
-let openai: OpenAI | null = null;
+let gemini: GoogleGenAI | null = null;
 
-function getOpenAI(): OpenAI | null {
-  if (!process.env.OPENAI_API_KEY) {
+function getGemini(): GoogleGenAI | null {
+  if (!process.env.GEMINI_API_KEY) {
     return null;
   }
-  if (!openai) {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (!gemini) {
+    gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
-  return openai;
+  return gemini;
 }
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Auth middleware setup
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Courses API
   app.get("/api/courses", async (req, res) => {
     try {
@@ -226,7 +243,7 @@ export async function registerRoutes(
     try {
       const { goals, currentSkills, preferredCategories, timeCommitment } = req.body;
 
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.GEMINI_API_KEY) {
         // Return a fallback recommendation if no API key
         const paths = await storage.getLearningPaths();
         const recommendedPath = paths[0];
@@ -249,7 +266,7 @@ Current Skills: ${currentSkills?.join(", ") || "Beginner"}
 Preferred Categories: ${preferredCategories?.join(", ") || "Any"}
 Weekly Time Commitment: ${timeCommitment || 10} hours
 
-Respond with JSON in this format:
+Respond with ONLY valid JSON in this format (no markdown, no code blocks):
 {
   "title": "Learning Path Title",
   "description": "Brief description of the path",
@@ -258,7 +275,7 @@ Respond with JSON in this format:
   "reasoning": "Why this path is recommended"
 }`;
 
-      const client = getOpenAI();
+      const client = getGemini();
       if (!client) {
         const paths = await storage.getLearningPaths();
         const recommendedPath = paths[0];
@@ -274,20 +291,12 @@ Respond with JSON in this format:
         });
       }
 
-      const response = await client.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          {
-            role: "system",
-            content: "You are an educational advisor helping learners find the best learning path. Respond only with valid JSON."
-          },
-          { role: "user", content: prompt }
-        ],
-        response_format: { type: "json_object" },
-        max_completion_tokens: 1024,
+      const response = await client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
       });
 
-      const recommendation = JSON.parse(response.choices[0].message.content || "{}");
+      const recommendation = JSON.parse(response.text || "{}");
 
       res.json({ recommendation });
     } catch (error) {
@@ -313,7 +322,7 @@ Respond with JSON in this format:
     try {
       const { skills, difficulty, category } = req.body;
 
-      if (!process.env.OPENAI_API_KEY) {
+      if (!process.env.GEMINI_API_KEY) {
         // Return a fallback project if no API key
         return res.json({
           project: {
@@ -344,7 +353,7 @@ Skills: ${skills?.join(", ") || "Web development basics"}
 Desired Difficulty: ${difficulty || "intermediate"}
 Category: ${category || "development"}
 
-Create a unique, portfolio-worthy project. Respond with JSON:
+Create a unique, portfolio-worthy project. Respond with ONLY valid JSON (no markdown, no code blocks):
 {
   "title": "Project Title",
   "description": "Project description",
@@ -355,7 +364,7 @@ Create a unique, portfolio-worthy project. Respond with JSON:
   "learningOutcomes": ["outcome 1", "outcome 2"]
 }`;
 
-      const client = getOpenAI();
+      const client = getGemini();
       if (!client) {
         return res.json({
           project: {
@@ -380,20 +389,12 @@ Create a unique, portfolio-worthy project. Respond with JSON:
         });
       }
 
-      const response = await client.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          {
-            role: "system",
-            content: "You are a project advisor creating practical, portfolio-worthy project ideas. Respond only with valid JSON."
-          },
-          { role: "user", content: prompt }
-        ],
-        response_format: { type: "json_object" },
-        max_completion_tokens: 1024,
+      const response = await client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
       });
 
-      const project = JSON.parse(response.choices[0].message.content || "{}");
+      const project = JSON.parse(response.text || "{}");
 
       res.json({ project });
     } catch (error) {

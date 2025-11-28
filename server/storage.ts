@@ -8,6 +8,8 @@ import type {
   Project,
   Analytics,
   UserPreferences,
+  User,
+  UpsertUser,
 } from "@shared/schema";
 
 // Mock data imports for initial seeding
@@ -439,6 +441,10 @@ const mockProjects: Project[] = [
 
 // Storage interface
 export interface IStorage {
+  // User operations (MANDATORY for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
   // Courses
   getCourses(): Promise<Course[]>;
   getCourse(id: string): Promise<Course | undefined>;
@@ -479,6 +485,7 @@ export class MemStorage implements IStorage {
   private userProgress: Map<string, UserProgress>;
   private projects: Map<string, Project>;
   private userPreferences: UserPreferences | undefined;
+  private users: Map<string, User>;
 
   constructor() {
     this.courses = new Map();
@@ -487,6 +494,7 @@ export class MemStorage implements IStorage {
     this.assessmentResults = new Map();
     this.userProgress = new Map();
     this.projects = new Map();
+    this.users = new Map();
 
     // Seed initial data
     this.seedData();
@@ -669,6 +677,27 @@ export class MemStorage implements IStorage {
   async saveUserPreferences(prefs: UserPreferences): Promise<UserPreferences> {
     this.userPreferences = { ...prefs, id: prefs.id || randomUUID() };
     return this.userPreferences;
+  }
+
+  // User operations (MANDATORY for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const id = userData.id || randomUUID();
+    const existing = this.users.get(id);
+    const user: User = {
+      id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      profileImageUrl: userData.profileImageUrl,
+      createdAt: existing?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, user);
+    return user;
   }
 }
 
