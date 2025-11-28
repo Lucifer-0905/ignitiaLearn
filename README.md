@@ -115,3 +115,79 @@ During development, the backend uses **mock in-memory data** but is fully prepar
 ```bash
 git clone https://github.com/Lucifer-0905/IgnitiaLearn.git
 cd IgnitiaLearn
+
+Here's how to run the Ignitia project after downloading all files:
+
+Prerequisites
+Node.js (v16 or higher) - Download
+npm (comes with Node.js)
+Step-by-Step Setup
+1. Install Dependencies
+npm install
+
+This installs all packages listed in package.json (Express, React, Tailwind, Gemini SDK, etc.)
+
+2. Set Up Environment Variables
+Create a .env or .env.local file in the project root:
+
+GEMINI_API_KEY=your_gemini_api_key_here
+NODE_ENV=development
+PORT=5000
+
+How to get your Gemini API Key:
+
+Go to Google AI Studio
+Click "Create API Key"
+Copy and paste it into your .env file
+3. Run the Project
+npm run dev
+
+This command:
+
+Starts the Express backend on port 5000
+Starts the Vite frontend dev server on the same port
+Enables hot reload (changes auto-refresh)
+4. Open in Browser
+http://localhost:5000
+
+You should see:
+
+Landing page with "Sign In" and "Create Account" buttons
+Click "Create Account" to sign up
+After login, you'll see the sidebar with navigation to all features
+Project Structure
+ignitia/
+├── server/              # Backend (Express)
+│   ├── index.ts        # Server entry point
+│   ├── routes.ts       # All API endpoints
+│   └── storage.ts      # Data management
+├── client/              # Frontend (React)
+│   └── src/
+│       ├── App.tsx     # Main app & routing
+│       ├── pages/      # All page components
+│       └── components/ # UI components
+├── shared/              # Shared types
+│   └── schema.ts       # Data models
+├── package.json         # Dependencies & scripts
+├── vite.config.ts      # Build config
+└── tsconfig.json       # TypeScript config
+
+Available Scripts
+npm run dev      # Start development server (frontend + backend)
+npm run build    # Build for production
+npm run preview  # Preview production build
+
+Features to Try After Login
+Dashboard - See your progress overview
+Courses - Browse and filter courses from Coursera/Udemy
+Learning Paths - Get AI-powered personalized learning recommendations (uses Gemini)
+Skill Assessment - Take an AI-generated skills quiz (uses Gemini)
+Projects - Get AI-suggested portfolio projects (uses Gemini)
+Analytics - Track your learning progress
+Troubleshooting
+Issue	Solution
+Port 5000 already in use	Kill the process: lsof -i :5000 then kill -9 <PID>
+npm install fails	Delete node_modules and package-lock.json, then retry
+Gemini API not working	Check if GEMINI_API_KEY is set in .env file
+Page not loading	Check browser console (F12) and terminal for errors
+That's it! You're ready to run Ignitia locally. 🚀
