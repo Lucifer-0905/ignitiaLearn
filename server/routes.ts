@@ -33,7 +33,9 @@ export async function registerRoutes(
       });
       
       // Set session
-      req.session!.userId = username;
+      if (req.session) {
+        req.session.userId = username;
+      }
       res.json({ user });
     } catch (error) {
       console.error("Login error:", error);
