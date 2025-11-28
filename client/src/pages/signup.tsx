@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -37,11 +38,13 @@ export default function Signup() {
       });
 
       if (response.ok) {
+        // Invalidate auth query to trigger refetch after signup
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         toast({
           title: "Success",
-          description: "Account created successfully. Please log in.",
+          description: "Account created successfully",
         });
-        navigate("/login");
+        navigate("/");
       } else {
         const error = await response.json();
         toast({

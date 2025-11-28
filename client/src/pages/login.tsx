@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -25,6 +26,8 @@ export default function Login() {
       });
 
       if (response.ok) {
+        // Invalidate auth query to refetch user data
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         toast({
           title: "Success",
           description: "Logged in successfully",
